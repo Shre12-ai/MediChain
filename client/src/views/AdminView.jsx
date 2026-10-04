@@ -44,9 +44,9 @@ function StatCard({ value, label, icon: Icon, color }) {
 }
 
 export default function AdminView() {
-  const [authed, setAuthed] = useState(false);
-  const [keyInput, setKeyInput] = useState('');
-  const [keyError, setKeyError] = useState('');
+  // This view is only rendered for role=admin users (gated in App.jsx).
+  // No second key prompt needed — auth is already proven at login.
+  const [authed] = useState(true);
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -84,14 +84,6 @@ export default function AdminView() {
     if (authed) fetchData();
   }, [authed, statusFilter, roleFilter]);
 
-  const handleLogin = () => {
-    if (keyInput === ADMIN_KEY) {
-      setAuthed(true);
-      setKeyError('');
-    } else {
-      setKeyError('Invalid admin key. Try: medchain-admin-2026');
-    }
-  };
 
   const doAction = async (endpoint, userId) => {
     setActionLoading(userId + endpoint);
@@ -113,42 +105,6 @@ export default function AdminView() {
       setActionLoading(null);
     }
   };
-
-  // --- Admin Login Screen ---
-  if (!authed) {
-    return (
-      <div className="max-w-md mx-auto mt-20 space-y-6">
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-ink-forest/10 border-2 border-ink-forest/30 flex items-center justify-center mx-auto mb-4">
-            <ShieldCheck className="w-8 h-8 text-ink-forest" />
-          </div>
-          <h2 className="font-serif text-3xl font-bold text-ink-forest">Admin Portal</h2>
-          <p className="text-sm text-ink-muted font-sans mt-1">Enter the admin key to manage user access requests.</p>
-        </div>
-        <div className="bg-paper-light border-2 border-paper-border rounded-xl p-6 shadow-ledger space-y-4">
-          <div>
-            <label className="block text-xs font-mono uppercase tracking-wider text-ink-muted mb-1.5 font-semibold">Admin Key</label>
-            <input
-              type="password"
-              value={keyInput}
-              onChange={e => setKeyInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleLogin()}
-              className="w-full px-3.5 py-2.5 bg-paper border border-paper-border rounded-lg text-sm font-mono focus:outline-none focus:border-ink-forest"
-              placeholder="Enter admin key..."
-            />
-            {keyError && <p className="text-xs text-red-600 font-mono mt-1">{keyError}</p>}
-          </div>
-          <button onClick={handleLogin}
-            className="w-full py-2.5 bg-ink-forest hover:bg-ink-forestDark text-white font-serif font-bold text-sm rounded-lg transition-all flex items-center justify-center gap-2">
-            <ShieldCheck className="w-4 h-4" /> Login to Admin Portal
-          </button>
-        </div>
-        <p className="text-center text-xs text-ink-muted font-mono">
-          Demo key: <span className="text-ink-forest font-bold">medchain-admin-2026</span>
-        </p>
-      </div>
-    );
-  }
 
   // --- Admin Dashboard ---
   return (

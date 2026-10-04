@@ -1,69 +1,13 @@
 import React, { useState } from 'react';
 import {
-  BookOpen, ShieldCheck, Factory, Truck, Building2, Store, UserCheck,
-  ArrowRight, Key, Mail, Lock, AlertCircle, Clock, Sparkles
+  BookOpen, ShieldCheck,
+  ArrowRight, Mail, Lock, AlertCircle, Clock
 } from 'lucide-react';
 
-const DEMO_PRESETS = [
-  {
-    role: 'manufacturer',
-    name: 'Apex Pharma Labs',
-    email: 'manufacturer@apexpharma.com',
-    label: 'Manufacturer',
-    Icon: Factory,
-    color: 'hover:border-ink-forest hover:bg-ink-forest/5 text-ink-forest',
-    desc: 'Mint new medicine batches & generate QR anchors',
-  },
-  {
-    role: 'distributor',
-    name: 'NorthStar Logistics',
-    email: 'distributor@northstar.com',
-    label: 'Distributor',
-    Icon: Truck,
-    color: 'hover:border-blue-700 hover:bg-blue-50 text-blue-900',
-    desc: 'Cold-chain transit & batch custody handoffs',
-  },
-  {
-    role: 'wholesaler',
-    name: 'Metro Drug Wholesale',
-    email: 'wholesaler@metrodrug.com',
-    label: 'Wholesaler',
-    Icon: Building2,
-    color: 'hover:border-amber-700 hover:bg-amber-50 text-amber-900',
-    desc: 'Bulk inventory supply to licensed pharmacies',
-  },
-  {
-    role: 'pharmacist',
-    name: 'St. Jude Community Pharmacy',
-    email: 'pharmacist@stjude.org',
-    label: 'Pharmacist',
-    Icon: Store,
-    color: 'hover:border-purple-700 hover:bg-purple-50 text-purple-900',
-    desc: 'Patient dispensing & incident tamper reporting',
-  },
-  {
-    role: 'customer',
-    name: 'Aarav Patel (Patient)',
-    email: 'customer@patient.com',
-    label: 'Customer / Patient',
-    Icon: UserCheck,
-    color: 'hover:border-ink-rust hover:bg-ink-rust/5 text-ink-rust',
-    desc: 'QR verification, passport trails & tamper flags',
-  },
-  {
-    role: 'admin',
-    name: 'Network Administrator',
-    email: 'admin@medchain.io',
-    label: 'System Admin',
-    Icon: ShieldCheck,
-    color: 'hover:border-[#C29B38] hover:bg-amber-50 text-[#9E731C]',
-    desc: 'Review, approve & grant on-chain user roles',
-  },
-];
 
 export default function LoginView({ onLoginSuccess, onNavigateToRegister }) {
-  const [identifier, setIdentifier] = useState('manufacturer@apexpharma.com');
-  const [password, setPassword] = useState('password123');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pendingNotice, setPendingNotice] = useState(null);
@@ -90,26 +34,6 @@ export default function LoginView({ onLoginSuccess, onNavigateToRegister }) {
         throw new Error(data.error || 'Failed to authenticate');
       }
 
-      onLoginSuccess(data.user, data.token);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleQuickDemoLogin = async (preset) => {
-    setLoading(true);
-    setError(null);
-    setPendingNotice(null);
-    try {
-      const res = await fetch('/api/auth/demo-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: preset.role }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Demo login failed');
       onLoginSuccess(data.user, data.token);
     } catch (err) {
       setError(err.message);
@@ -252,41 +176,8 @@ export default function LoginView({ onLoginSuccess, onNavigateToRegister }) {
             </button>
           </form>
 
-          {/* Fast One-Click Persona Login (Evaluator & Demo Convenience) */}
-          <div className="pt-4 border-t border-paper-border space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-ink-gold font-bold flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> One-Click Role Authentication (Demo)
-              </span>
-              <span className="text-[10px] text-ink-muted font-mono">(Examiner Presets)</span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {DEMO_PRESETS.map((p) => {
-                const Icon = p.Icon;
-                return (
-                  <button
-                    key={p.role}
-                    type="button"
-                    onClick={() => handleQuickDemoLogin(p)}
-                    title={p.desc}
-                    className={`p-2.5 rounded-lg border border-paper-border bg-paper text-left transition-all hover:shadow-sm ${p.color}`}
-                  >
-                    <div className="flex items-center gap-1.5 font-bold text-xs font-serif">
-                      <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-                      <span className="truncate">{p.label}</span>
-                    </div>
-                    <span className="text-[10px] font-mono text-ink-muted block truncate mt-0.5">
-                      {p.name.split(' ')[0]}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Registration Link */}
-          <div className="pt-3 border-t border-paper-border/60 flex items-center justify-between text-xs font-mono">
+          <div className="pt-4 border-t border-paper-border/60 flex items-center justify-between text-xs font-mono">
             <span className="text-ink-muted">Don't have a station ID?</span>
             <button
               type="button"

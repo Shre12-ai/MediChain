@@ -5,15 +5,15 @@ export default function RegisterView({ onBatchRegistered, activeRole = 'manufact
   const canRegister = activeRole === 'manufacturer';
 
   const [formData, setFormData] = useState({
-    batchNumber: 'MED-2026-' + Math.floor(100 + Math.random() * 900),
-    medicineName: 'Azithromycin 500mg',
-    composition: 'Azithromycin Dihydrate IP 500mg',
-    dosage: '500mg Tablet (Strip of 3)',
-    mfgDate: new Date().toISOString().split('T')[0],
-    expDate: new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString().split('T')[0],
-    storageTemperature: '15°C - 25°C (Cool & Dry)',
-    packageType: 'Alu-Alu Blister Pack',
-    notes: 'Manufactured under WHO-GMP certified facility.',
+    batchNumber: '',
+    medicineName: '',
+    composition: '',
+    dosage: '',
+    mfgDate: '',
+    expDate: '',
+    storageTemperature: '',
+    packageType: '',
+    notes: '',
   });
 
   const [loading, setLoading] = useState(false);

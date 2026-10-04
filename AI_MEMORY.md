@@ -11,44 +11,39 @@
   - **Database Layer:** **Supabase Cloud PostgreSQL Database** (`https://ubfnptxtojmglbunzyaz.supabase.co`) with MongoDB & in-memory fallback
   - **Backend Layer:** Express REST API + Ethers.js v6
   - **Frontend Layer:** React 18 + Vite + Tailwind CSS with the *Apothecary-Ledger* visual identity
+- **Authentication & Role Security:**
+  - Real **Login Portal** (`LoginView.jsx`) replacing the old demo-switching mechanism.
+  - Strict role-based feature gating: each user only sees and accesses features permitted for their role.
+  - Pending approval block: Users who register must be approved by Admin in the Admin Portal before gaining access.
+  - Station logout button (`Exit Station`) to sign out and switch accounts.
 - **Git Repository Status:**
   - Branch: `main`
-  - Clean initial commit: `7ae909d`
-  - Excluded via `.gitignore`: `node_modules/`, `dist/`, `artifacts/`, `cache/`, `server/.env`
-  - GitHub Actions CI workflow: `.github/workflows/test.yml` (9/9 automated tests)
+  - Latest Commit: `7e7da43` ("feat: real authentication portal with role-based access gating, pending review blocking, and station logout")
+  - GitHub Actions CI workflow: `.github/workflows/test.yml` (9/9 automated tests passing)
 
 ---
 
-## 2. Admin Portal & User Access Management System
-- **Role Registration Portal (`UserRegistrationView.jsx`):**
-  - Public 3-step registration flow:
-    1. Select Role (`Manufacturer`, `Distributor`, `Wholesaler`, `Pharmacist`, `Customer`) with clear feature breakdown
-    2. Enter Name, Email, Wallet Address, Facility Name, Drug License No., and Access Reason
-    3. Instant status confirmation (`PENDING APPROVAL`)
-- **Admin Management Portal (`AdminView.jsx`):**
-  - Secured behind Admin Key (`medchain-admin-2026`)
-  - Live registration stats (Total, Pending, Approved, Rejected, By-Role breakdown)
-  - Filtering by status (`pending`, `approved`, `rejected`) and role
-  - One-click actions:
-    - **Approve:** Grants access & calls `assignRole()` on the MedChain smart contract
-    - **Reject:** Declines access request with optional admin note
-    - **Revoke:** Revokes access and sets on-chain role to 0 (`Role.None`)
-- **API Endpoints:**
-  - `POST /api/users/register` — Submit user access request
-  - `GET /api/users/status/:address` — Check access status by wallet address
-  - `GET /api/admin/users` — List all requests (requires `X-Admin-Key`)
-  - `GET /api/admin/stats` — Metrics summary
-  - `POST /api/admin/approve` — Approve user & assign role on-chain
-  - `POST /api/admin/reject` — Reject user request
-  - `POST /api/admin/revoke` — Revoke user access
+## 2. Role-Based Feature Permissions Matrix
+
+| Role | Permitted Chapters in Sidebar | Restricted / Hidden Actions |
+|---|---|---|
+| **Manufacturer** | • Verify Batch (Ch. I)<br>• Register Batch (Ch. II)<br>• Custody Handoff (Ch. III)<br>• Trust Scores (Ch. IV) | Cannot access Admin Portal or file incident reports as dispenser. |
+| **Distributor** | • Verify Batch (Ch. I)<br>• Custody Handoff (Ch. III)<br>• Trust Scores (Ch. IV) | **Cannot register new batches** (Manufacturer-only). |
+| **Wholesaler** | • Verify Batch (Ch. I)<br>• Custody Handoff (Ch. III)<br>• Trust Scores (Ch. IV) | **Cannot register new batches**. |
+| **Pharmacist** | • Verify Batch (Ch. I)<br>• Custody Handoff / Dispense (Ch. III)<br>• Report Incident (Ch. V)<br>• Trust Scores (Ch. IV) | **Cannot register new batches**. |
+| **Customer** | • Verify Batch (Ch. I - Camera QR Scanner)<br>• Report Incident (Ch. V) | **Cannot register batches or perform custody transfers**. |
+| **Admin** | • All 5 Ledger Chapters + **Admin Portal** | Reviews, approves, rejects, and assigns on-chain roles. |
 
 ---
 
-## 3. Live Camera QR Code Scanner (`VerifyView.jsx`)
-- Integrated `html5-qrcode` directly into Chapter I (Verification).
-- One-click **"Scan QR"** toggle activates laptop webcam or mobile camera.
-- Automatically detects and parses medicine batch QR codes (supports both JSON payloads and plain batch IDs).
-- Automatically triggers on-chain cryptographic hash verification upon scan.
+## 3. Pre-Configured Accounts for Demonstration
+Password for all demo accounts: `password123` (or use the one-click preset buttons on the login screen):
+- **Admin:** `admin@medchain.io` (or password: `medchain-admin-2026`)
+- **Manufacturer:** `manufacturer@apexpharma.com`
+- **Distributor:** `distributor@northstar.com`
+- **Wholesaler:** `wholesaler@metrodrug.com`
+- **Pharmacist:** `pharmacist@stjude.org`
+- **Customer:** `customer@patient.com`
 
 ---
 
@@ -57,12 +52,3 @@
 - **Contract Address:** `0x5FbDB2315678afecb367f032d93F642f64180aa3`
 - **Backend API:** `http://localhost:5000` (Connected to Supabase cloud)
 - **Frontend Client:** `http://localhost:3000`
-
----
-
-## 5. Ready to Push to GitHub
-```powershell
-# In c:\Users\Administrator\Desktop\MediChain
-git remote add origin https://github.com/<YOUR-USERNAME>/<YOUR-REPO-NAME>.git
-git push -u origin main
-```

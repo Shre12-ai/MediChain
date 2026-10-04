@@ -1,15 +1,38 @@
-import React, { useState } from 'react';
-import { ShieldAlert, AlertOctagon, CheckCircle2, AlertTriangle, Send } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ShieldAlert, CheckCircle2, AlertTriangle, Send } from 'lucide-react';
 
-export default function ReportView({ prefilledBatch = '', onReportFiled }) {
-  const [batchNumber, setBatchNumber] = useState(prefilledBatch || 'MED-2026-001');
-  const [reasonCategory, setReasonCategory] = useState('Broken / Tampered Security Seal');
+export default function ReportView({ prefilledBatch = '', activeRole = 'customer', onReportFiled }) {
+  // Auto-derive reporterRole from authenticated user's role
+  const ROLE_TO_REPORTER = {
+    pharmacist: 'Pharmacist',
+    customer: 'Customer',
+    wholesaler: 'Pharmacist', // wholesalers can report via pharmacist capacity
+    distributor: 'Pharmacist',
+    manufacturer: 'Pharmacist',
+  };
+
+  const [batchNumber, setBatchNumber] = useState(prefilledBatch || '');
+  const [reasonCategory, setReasonCategory] = useState('');
   const [details, setDetails] = useState('');
-  const [location, setLocation] = useState('Metro Chemist, Counter #3');
-  const [reporterRole, setReporterRole] = useState('Customer');
+  const [location, setLocation] = useState('');
+  const [reporterRole, setReporterRole] = useState(ROLE_TO_REPORTER[activeRole] || 'Customer');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
+
+  // Sync reporterRole if activeRole prop changes
+  useEffect(() => {
+    setReporterRole(ROLE_TO_REPORTER[activeRole] || 'Customer');
+  }, [activeRole]);
+
+  // Sync prefilledBatch if navigated from VerifyView
+  const prevPrefilled = useRef(prefilledBatch);
+  useEffect(() => {
+    if (prefilledBatch && prefilledBatch !== prevPrefilled.current) {
+      setBatchNumber(prefilledBatch);
+      prevPrefilled.current = prefilledBatch;
+    }
+  }, [prefilledBatch]);
 
   const categories = [
     'Broken / Tampered Security Seal',
@@ -22,11 +45,12 @@ export default function ReportView({ prefilledBatch = '', onReportFiled }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!reasonCategory) { setError('Please select a tamper indicator category.'); return; }
     setLoading(true);
     setError(null);
     setSuccess(null);
 
-    const fullReason = `${reasonCategory}: ${details || 'Observed by reporter at inspection'}`;
+    const fullReason = `${reasonCategory}${details ? ': ' + details : ''}`;
 
     try {
       const res = await fetch('/api/reports', {
@@ -41,11 +65,14 @@ export default function ReportView({ prefilledBatch = '', onReportFiled }) {
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to file report');
-      }
+      if (!res.ok) throw new Error(data.error || 'Failed to file report');
 
       setSuccess(data);
+      // Reset form fields after success
+      setBatchNumber('');
+      setReasonCategory('');
+      setDetails('');
+      setLocation('');
       if (onReportFiled) onReportFiled();
     } catch (err) {
       setError(err.message);
@@ -68,6 +95,24 @@ export default function ReportView({ prefilledBatch = '', onReportFiled }) {
           Reports are written directly on-chain and attributed to the last supply chain node that held custody, protecting reporter anonymity while keeping suppliers accountable.
         </p>
       </div>
+
+      {/* Confirmation Card */}
+      {success && (
+        <div className="p-5 rounded-xl bg-rose-50 border-2 border-dashed border-ink-rust text-ink-rustDark shadow-sm space-y-2">
+          <div className="flex items-center gap-2 font-serif font-bold text-base">
+            <CheckCircle2 className="w-5 h-5 text-ink-rust" />
+            <span>Report Recorded to Blockchain Ledger</span>
+          </div>
+          <p className="text-xs font-sans">
+            The batch has been flagged on-chain. The node that last transferred this batch will have its dynamic trust score adjusted accordingly.
+          </p>
+          {success.txHash && (
+            <div className="text-[10px] font-mono break-all text-ink-muted pt-1 border-t border-ink-rust/20">
+              Tx Hash: {success.txHash}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Form Card */}
       <div className="bg-paper-light border-2 border-paper-border rounded-xl p-6 sm:p-8 shadow-ledger">
@@ -107,14 +152,14 @@ export default function ReportView({ prefilledBatch = '', onReportFiled }) {
               Primary Tamper / Counterfeit Indicator *
             </label>
             <select
+              required
               value={reasonCategory}
               onChange={(e) => setReasonCategory(e.target.value)}
               className="w-full px-3.5 py-2.5 bg-paper border border-paper-border rounded-lg font-sans text-sm focus:outline-none focus:border-ink-rust"
             >
+              <option value="">— Select an indicator —</option>
               {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
+                <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </div>
@@ -127,7 +172,7 @@ export default function ReportView({ prefilledBatch = '', onReportFiled }) {
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. City Pharmacy, Main Market Counter #2"
+              placeholder="e.g. City Pharmacy, Main Market"
               className="w-full px-3.5 py-2.5 bg-paper border border-paper-border rounded-lg text-sm focus:outline-none focus:border-ink-rust"
             />
           </div>
@@ -164,22 +209,6 @@ export default function ReportView({ prefilledBatch = '', onReportFiled }) {
           </div>
         </form>
       </div>
-
-      {/* Confirmation Card */}
-      {success && (
-        <div className="p-5 rounded-xl bg-rose-50 border-2 border-dashed border-ink-rust text-ink-rustDark shadow-sm space-y-2 animate-stamp">
-          <div className="flex items-center gap-2 font-serif font-bold text-base">
-            <CheckCircle2 className="w-5 h-5 text-ink-rust" />
-            <span>Report Recorded to Blockchain Ledger</span>
-          </div>
-          <p className="text-xs font-sans">
-            The batch <strong>{batchNumber}</strong> has been flagged on-chain. The node that last transferred this batch will have its dynamic trust score adjusted accordingly.
-          </p>
-          <div className="text-[10px] font-mono break-all text-ink-muted pt-1 border-t border-ink-rust/20">
-            Tx Hash: {success.txHash}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

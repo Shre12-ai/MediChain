@@ -25,7 +25,7 @@ export default function CustodyView({ activeRole, setActiveRole }) {
   const [nodes, setNodes] = useState([]);
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'myStation'
-  const [notes, setNotes] = useState('Quality check passed. Package integrity verified.');
+  const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [transferSuccess, setTransferSuccess] = useState(null);
   const [error, setError] = useState(null);

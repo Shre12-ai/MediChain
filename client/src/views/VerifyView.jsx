@@ -20,7 +20,7 @@ import InkStamp from '../components/InkStamp';
 import PassportTrail from '../components/PassportTrail';
 
 export default function VerifyView({ onNavigateToReport, activeRole = 'customer' }) {
-  const [batchNumber, setBatchNumber] = useState('MED-2026-001');
+  const [batchNumber, setBatchNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -184,11 +184,11 @@ export default function VerifyView({ onNavigateToReport, activeRole = 'customer'
           </div>
         )}
 
-        {/* Demo Fast Selector */}
-        <div className="mt-4 pt-3 border-t border-paper-border/60 flex flex-wrap items-center gap-2">
-          <span className="font-mono text-xs text-ink-muted">Quick Demo Batches:</span>
-          {recentBatches.length > 0 ? (
-            recentBatches.map((b) => (
+        {/* Live Batch Quick-Select (from DB) */}
+        {recentBatches.length > 0 && (
+          <div className="mt-4 pt-3 border-t border-paper-border/60 flex flex-wrap items-center gap-2">
+            <span className="font-mono text-xs text-ink-muted">Batches on Ledger:</span>
+            {recentBatches.map((b) => (
               <button
                 key={b.batchNumber}
                 type="button"
@@ -201,11 +201,9 @@ export default function VerifyView({ onNavigateToReport, activeRole = 'customer'
                 <span>{b.batchNumber}</span>
                 <span className={`w-1.5 h-1.5 rounded-full ${b.status === 'Flagged' ? 'bg-ink-rust' : 'bg-emerald-600'}`} />
               </button>
-            ))
-          ) : (
-            <span className="font-mono text-xs text-ink-muted italic">Run seed script to populate sample batches</span>
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Error state */}
