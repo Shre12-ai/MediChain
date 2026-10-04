@@ -10,6 +10,7 @@ const nodeRoutes = require("./routes/nodes");
 const reportRoutes = require("./routes/reports");
 const userRoutes = require("./routes/users");
 const adminRoutes = require("./routes/admin");
+const authRoutes = require("./routes/auth");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,6 +20,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.use("/api/auth", authRoutes);
 app.use("/api/batches", batchRoutes);
 app.use("/api/nodes", nodeRoutes);
 app.use("/api/reports", reportRoutes);

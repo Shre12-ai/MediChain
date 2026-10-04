@@ -52,7 +52,7 @@ const ROLES = [
   },
 ];
 
-export default function UserRegistrationView({ onRegistered }) {
+export default function UserRegistrationView({ onRegistered, onNavigateToLogin }) {
   const [step, setStep] = useState(1); // 1=role selection, 2=details form, 3=success
   const [selectedRole, setSelectedRole] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -142,7 +142,16 @@ export default function UserRegistrationView({ onRegistered }) {
                 );
               })}
             </div>
-            <div className="flex justify-end mt-4">
+            <div className="flex items-center justify-between mt-4">
+              {onNavigateToLogin ? (
+                <button
+                  type="button"
+                  onClick={onNavigateToLogin}
+                  className="text-xs font-mono text-ink-muted hover:text-ink-forest underline"
+                >
+                  ← Already registered? Sign In
+                </button>
+              ) : <div />}
               <button
                 disabled={!selectedRole}
                 onClick={() => setStep(2)}
@@ -267,11 +276,26 @@ export default function UserRegistrationView({ onRegistered }) {
                 <span className="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-bold">PENDING APPROVAL</span>
               </div>
             </div>
-            {onRegistered && (
-              <button onClick={() => onRegistered()} className="text-ink-forest text-sm font-mono underline hover:text-ink-forestDark">
-                Back to Application
-              </button>
-            )}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+              {onNavigateToLogin && (
+                <button
+                  type="button"
+                  onClick={onNavigateToLogin}
+                  className="px-6 py-2.5 bg-ink-forest hover:bg-ink-forestDark text-white font-serif font-bold text-sm rounded-lg shadow transition-all"
+                >
+                  Proceed to Sign In Gateway
+                </button>
+              )}
+              {onRegistered && (
+                <button
+                  type="button"
+                  onClick={onRegistered}
+                  className="text-ink-forest text-xs font-mono underline hover:text-ink-forestDark"
+                >
+                  Back to Public Ledger
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

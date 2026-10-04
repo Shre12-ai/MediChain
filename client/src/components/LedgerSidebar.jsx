@@ -6,32 +6,50 @@ import {
   ArrowRightLeft, 
   ShieldAlert, 
   Award, 
-  Layers,
   ShieldCheck,
-  UserPlus
+  UserPlus,
+  LogOut,
+  User,
+  Factory,
+  Truck,
+  Building2,
+  Store,
+  UserCheck
 } from 'lucide-react';
 
-export default function LedgerSidebar({ currentTab, setTab, activeRole, setActiveRole }) {
-  const chapters = [
-    { id: 'verify', label: 'Verify Batch', icon: SearchCheck, tag: 'Chapter I', desc: 'Scan & verify authenticity' },
-    { id: 'register', label: 'Register Batch', icon: PlusCircle, tag: 'Chapter II', desc: 'Manufacturer batch entry' },
-    { id: 'custody', label: 'Custody Handoff', icon: ArrowRightLeft, tag: 'Chapter III', desc: 'Station transfers & logs' },
-    { id: 'trust', label: 'Trust Scores', icon: Award, tag: 'Chapter IV', desc: 'Dynamic node reputation' },
-    { id: 'report', label: 'Report Incident', icon: ShieldAlert, tag: 'Chapter V', desc: 'Crowdsourced tamper alerts' },
-  ];
+const ROLE_PERMITTED_TABS = {
+  admin: ['verify', 'register', 'custody', 'trust', 'report', 'admin'],
+  manufacturer: ['verify', 'register', 'custody', 'trust'],
+  distributor: ['verify', 'custody', 'trust'],
+  wholesaler: ['verify', 'custody', 'trust'],
+  pharmacist: ['verify', 'custody', 'report', 'trust'],
+  customer: ['verify', 'report'],
+};
 
-  const adminChapters = [
-    { id: 'admin', label: 'Admin Portal', icon: ShieldCheck, tag: 'Admin', desc: 'Approve & manage users' },
-    { id: 'user-register', label: 'Request Access', icon: UserPlus, tag: 'Access', desc: 'Register your account' },
-  ];
+const ROLE_ICONS = {
+  admin: ShieldCheck,
+  manufacturer: Factory,
+  distributor: Truck,
+  wholesaler: Building2,
+  pharmacist: Store,
+  customer: UserCheck,
+};
 
-  const roles = [
-    { id: 'manufacturer', label: 'Manufacturer' },
-    { id: 'distributor', label: 'Distributor' },
-    { id: 'wholesaler', label: 'Wholesaler' },
-    { id: 'pharmacist', label: 'Pharmacist' },
-    { id: 'customer', label: 'Customer' },
-  ];
+const ALL_CHAPTERS = [
+  { id: 'verify', label: 'Verify Batch', icon: SearchCheck, tag: 'Chapter I', desc: 'Scan & verify authenticity' },
+  { id: 'register', label: 'Register Batch', icon: PlusCircle, tag: 'Chapter II', desc: 'Manufacturer batch entry' },
+  { id: 'custody', label: 'Custody Handoff', icon: ArrowRightLeft, tag: 'Chapter III', desc: 'Station transfers & logs' },
+  { id: 'trust', label: 'Trust Scores', icon: Award, tag: 'Chapter IV', desc: 'Dynamic node reputation' },
+  { id: 'report', label: 'Report Incident', icon: ShieldAlert, tag: 'Chapter V', desc: 'Crowdsourced tamper alerts' },
+  { id: 'admin', label: 'Admin Portal', icon: ShieldCheck, tag: 'Admin', desc: 'User role approval & access' },
+];
+
+export default function LedgerSidebar({ currentTab, setTab, currentUser, onLogout }) {
+  const userRole = (currentUser?.role || 'customer').toLowerCase();
+  const allowedTabs = ROLE_PERMITTED_TABS[userRole] || ['verify'];
+  const visibleChapters = ALL_CHAPTERS.filter(ch => allowedTabs.includes(ch.id));
+
+  const RoleIcon = ROLE_ICONS[userRole] || User;
 
   return (
     <aside className="w-72 bg-[#17261C] text-[#E8E4D8] border-r-4 border-[#C29B38]/60 flex flex-col justify-between shadow-2xl relative select-none">
@@ -60,11 +78,12 @@ export default function LedgerSidebar({ currentTab, setTab, activeRole, setActiv
 
       {/* Chapter Navigation / Spine ribbons */}
       <nav className="flex-1 py-4 px-3 space-y-1.5 overflow-y-auto">
-        <div className="px-3 pb-2 text-[10px] uppercase font-mono tracking-wider text-[#A3B3A7]/70">
-          Ledger Chapters
+        <div className="px-3 pb-2 text-[10px] uppercase font-mono tracking-wider text-[#A3B3A7]/70 flex items-center justify-between">
+          <span>Permitted Chapters</span>
+          <span className="text-[#C29B38] font-bold capitalize">{userRole}</span>
         </div>
 
-        {chapters.map((chapter) => {
+        {visibleChapters.map((chapter) => {
           const Icon = chapter.icon;
           const isActive = currentTab === chapter.id;
           return (
@@ -94,72 +113,53 @@ export default function LedgerSidebar({ currentTab, setTab, activeRole, setActiv
             </button>
           );
         })}
-
-        {/* Admin & Access section */}
-        <div className="px-3 pt-4 pb-2 text-[10px] uppercase font-mono tracking-wider text-[#C29B38]/70 border-t border-white/10 mt-3">
-          Management
-        </div>
-        {adminChapters.map((chapter) => {
-          const Icon = chapter.icon;
-          const isActive = currentTab === chapter.id;
-          return (
-            <button
-              key={chapter.id}
-              onClick={() => setTab(chapter.id)}
-              className={`w-full group text-left px-3.5 py-3 rounded-md transition-all flex items-center gap-3 relative ${
-                isActive
-                  ? 'bg-[#2A1F10] text-[#FAF8F5] border-l-4 border-[#C29B38] shadow-md font-semibold'
-                  : 'text-[#C5D1C7] hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-[#C29B38]' : 'text-[#879B8C] group-hover:text-white'}`} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <span className="font-serif text-sm tracking-wide block truncate">
-                    {chapter.label}
-                  </span>
-                  <span className="font-mono text-[9px] uppercase tracking-wider opacity-60">
-                    {chapter.tag}
-                  </span>
-                </div>
-                <span className="text-[11px] font-sans text-[#97A79B] block truncate leading-tight">
-                  {chapter.desc}
-                </span>
-              </div>
-            </button>
-          );
-        })}
       </nav>
 
-      {/* Role Switcher & On-Chain Status footer */}
+      {/* Authenticated User Station Card & Logout Footer */}
       <div className="p-4 bg-[#121F16] border-t border-white/10 space-y-3">
-        <div>
-          <div className="flex items-center justify-between text-[10px] uppercase font-mono tracking-wider text-[#C29B38] mb-1.5">
-            <span className="flex items-center gap-1">
-              <Layers className="w-3 h-3" /> Active Persona
+        {/* User Station Identity */}
+        <div className="p-3 rounded-lg bg-[#1C3323] border border-[#C29B38]/30">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] uppercase font-mono tracking-wider text-[#C29B38] font-bold flex items-center gap-1.5">
+              <RoleIcon className="w-3.5 h-3.5 text-[#C29B38]" />
+              <span className="capitalize">{currentUser?.role || 'Guest'} Station</span>
             </span>
-            <span className="text-[9px] text-[#879B8C]">(Demo Switch)</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           </div>
-          <select
-            value={activeRole}
-            onChange={(e) => setActiveRole(e.target.value)}
-            className="w-full bg-[#1C3323] text-white border border-[#C29B38]/40 rounded px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-[#C29B38]"
-          >
-            {roles.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.label}
-              </option>
-            ))}
-          </select>
+
+          <div className="font-serif text-sm font-bold text-white truncate">
+            {currentUser?.name || 'Authorized Operator'}
+          </div>
+
+          {currentUser?.facility_name && (
+            <div className="text-[11px] text-[#A3B3A7] truncate font-sans">
+              {currentUser.facility_name}
+            </div>
+          )}
+
+          {currentUser?.wallet_address && (
+            <div className="text-[9px] font-mono text-[#879B8C] truncate mt-1">
+              {currentUser.wallet_address.slice(0, 10)}...{currentUser.wallet_address.slice(-6)}
+            </div>
+          )}
         </div>
+
+        {/* Logout Button */}
+        <button
+          onClick={onLogout}
+          className="w-full py-2 px-3 rounded border border-white/15 bg-white/5 hover:bg-red-950/40 hover:border-red-500/50 hover:text-red-200 text-xs font-mono text-[#C5D1C7] flex items-center justify-center gap-2 transition-all"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span>Exit Station (Logout)</span>
+        </button>
 
         {/* Live Network Pill */}
         <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-[#A3B3A7]">
           <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Hardhat Local (31337)</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span>Hardhat (31337)</span>
           </div>
-          <span className="text-[#C29B38]">v1.0.0</span>
+          <span className="text-[#C29B38]">Supabase Connected</span>
         </div>
       </div>
     </aside>

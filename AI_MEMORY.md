@@ -8,35 +8,61 @@
 - **Project Name:** MedChain (BCS-554 College Mini Project, CSE Dept)
 - **Architecture:** 3-Tier Full-Stack Decentralized Application
   - **Blockchain Layer:** Solidity `MedChain.sol` (Solidity 0.8.24, viaIR enabled) on local Hardhat Node (Chain ID `31337`)
-  - **Database Layer:** **Supabase Cloud PostgreSQL Database** (`https://ubfnptxtojmglbunzyaz.supabase.co`) with Mongoose/MongoDB fallback
+  - **Database Layer:** **Supabase Cloud PostgreSQL Database** (`https://ubfnptxtojmglbunzyaz.supabase.co`) with MongoDB & in-memory fallback
   - **Backend Layer:** Express REST API + Ethers.js v6
   - **Frontend Layer:** React 18 + Vite + Tailwind CSS with the *Apothecary-Ledger* visual identity
-- **Live Service Status (ACTIVE NOW):**
-  - **Database:** Supabase Cloud Database connected and seeded (`batches`, `node_profiles`, `reports` tables)
-  - **Blockchain Node:** `http://127.0.0.1:8545` (Chain ID: `31337`)
-  - **Contract Address:** `0x5FbDB2315678afecb367f032d93F642f64180aa3`
-  - **Backend API:** `http://localhost:5000`
-  - **Frontend Client:** `http://localhost:3000`
+- **Git Repository Status:**
+  - Branch: `main`
+  - Clean initial commit: `7ae909d`
+  - Excluded via `.gitignore`: `node_modules/`, `dist/`, `artifacts/`, `cache/`, `server/.env`
+  - GitHub Actions CI workflow: `.github/workflows/test.yml` (9/9 automated tests)
 
 ---
 
-## 2. Supabase Tables & Cloud Data
-1. **`batches`**:
-   - `MED-2026-001` (Amoxicillin 500mg)
-   - `MED-2026-002` (Paracetamol 650mg)
-   - `MED-2026-003` (Azithromycin 250mg)
-2. **`node_profiles`**:
-   - 5 participants (Apex Pharma Labs, NorthStar Logistics, Metro Wholesale Drug Corp, St. Jude Community Pharmacy, Demo Patient)
-3. **`reports`**:
-   - Suspicious tamper report for `MED-2026-003`
+## 2. Admin Portal & User Access Management System
+- **Role Registration Portal (`UserRegistrationView.jsx`):**
+  - Public 3-step registration flow:
+    1. Select Role (`Manufacturer`, `Distributor`, `Wholesaler`, `Pharmacist`, `Customer`) with clear feature breakdown
+    2. Enter Name, Email, Wallet Address, Facility Name, Drug License No., and Access Reason
+    3. Instant status confirmation (`PENDING APPROVAL`)
+- **Admin Management Portal (`AdminView.jsx`):**
+  - Secured behind Admin Key (`medchain-admin-2026`)
+  - Live registration stats (Total, Pending, Approved, Rejected, By-Role breakdown)
+  - Filtering by status (`pending`, `approved`, `rejected`) and role
+  - One-click actions:
+    - **Approve:** Grants access & calls `assignRole()` on the MedChain smart contract
+    - **Reject:** Declines access request with optional admin note
+    - **Revoke:** Revokes access and sets on-chain role to 0 (`Role.None`)
+- **API Endpoints:**
+  - `POST /api/users/register` — Submit user access request
+  - `GET /api/users/status/:address` — Check access status by wallet address
+  - `GET /api/admin/users` — List all requests (requires `X-Admin-Key`)
+  - `GET /api/admin/stats` — Metrics summary
+  - `POST /api/admin/approve` — Approve user & assign role on-chain
+  - `POST /api/admin/reject` — Reject user request
+  - `POST /api/admin/revoke` — Revoke user access
 
 ---
 
-## 3. Configured Supply Chain Demo Personas & Wallets
-| Persona | Name | Hardhat Signer Index | Public Address | Role ID |
-|---|---|---|---|---|
-| **Manufacturer** | Apex Pharma Labs (Mfg) | Account #0 | `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266` | `1` |
-| **Distributor** | NorthStar Logistics (Dist) | Account #1 | `0x70997970C51812dc3A010C7d01b50e0d17dc79C8` | `2` |
-| **Wholesaler** | Metro Wholesale Drug Corp | Account #2 | `0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC` | `3` |
-| **Pharmacist** | St. Jude Community Pharmacy | Account #3 | `0x90F79bf6EB2c4f870365E785982E1f101E93b906` | `4` |
-| **Customer** | Demo Patient / End Consumer | Account #4 | `0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65` | `5` |
+## 3. Live Camera QR Code Scanner (`VerifyView.jsx`)
+- Integrated `html5-qrcode` directly into Chapter I (Verification).
+- One-click **"Scan QR"** toggle activates laptop webcam or mobile camera.
+- Automatically detects and parses medicine batch QR codes (supports both JSON payloads and plain batch IDs).
+- Automatically triggers on-chain cryptographic hash verification upon scan.
+
+---
+
+## 4. Live Running Services
+- **Hardhat Blockchain Node:** `http://127.0.0.1:8545` (Chain ID: `31337`)
+- **Contract Address:** `0x5FbDB2315678afecb367f032d93F642f64180aa3`
+- **Backend API:** `http://localhost:5000` (Connected to Supabase cloud)
+- **Frontend Client:** `http://localhost:3000`
+
+---
+
+## 5. Ready to Push to GitHub
+```powershell
+# In c:\Users\Administrator\Desktop\MediChain
+git remote add origin https://github.com/<YOUR-USERNAME>/<YOUR-REPO-NAME>.git
+git push -u origin main
+```
