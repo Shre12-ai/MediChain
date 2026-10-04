@@ -1,0 +1,28 @@
+{
+  "name": "medchain",
+  "version": "1.0.0",
+  "description": "MedChain - Blockchain-based medicine batch verification system",
+  "scripts": {
+    "node": "cd contracts && npx hardhat node",
+    "compile": "cd contracts && npx hardhat compile",
+    "test:contracts": "cd contracts && npx hardhat test",
+    "deploy:local": "cd contracts && npx hardhat run scripts/deploy.js --network localhost",
+    "seed": "cd server && node src/scripts/seed.js",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run node\" \"npm run server\" \"npm run client\""
+  },
+  "keywords": [
+    "blockchain",
+    "solidity",
+    "hardhat",
+    "pharmaceutical",
+    "supply-chain",
+    "verification"
+  ],
+  "author": "MedChain Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

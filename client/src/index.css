@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #F4F1EA;
+    color: #262624;
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  h1, h2, h3, .font-serif-title {
+    font-family: 'Libre Caslon Text', Georgia, serif;
+  }
+
+  code, pre, .font-data {
+    font-family: 'IBM Plex Mono', monospace;
+  }
+}
+
+/* Aged paper subtle texture and ledger grid styling */
+.paper-grain {
+  background-color: #F4F1EA;
+  background-image: radial-gradient(#E2DDCF 0.75px, transparent 0.75px), radial-gradient(#E2DDCF 0.75px, #F4F1EA 0.75px);
+  background-size: 30px 30px;
+  background-position: 0 0, 15px 15px;
+}
+
+.ledger-lines {
+  background-image: linear-gradient(to bottom, transparent 31px, rgba(211, 204, 192, 0.45) 32px);
+  background-size: 100% 32px;
+}
+
+/* Rubber ink stamp pressing animation */
+@keyframes stamp-press {
+  0% {
+    opacity: 0;
+    transform: scale(2.4) rotate(-15deg);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.95) rotate(-3deg);
+  }
+  75% {
+    transform: scale(1.04) rotate(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-4deg);
+  }
+}
+
+.animate-stamp {
+  animation: stamp-press 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Passport stamp borders */
+.passport-border {
+  border: 2px dashed #9E9789;
+}
+
+/* Custom scrollbars matching apothecary theme */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #EBE7DC;
+}
+::-webkit-scrollbar-thumb {
+  background: #C5BEAF;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9E9789;
+}
