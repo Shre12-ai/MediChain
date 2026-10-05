@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Factory, Truck, Building2, Store, UserCheck,
-  ArrowRight, CheckCircle2, Clock, AlertTriangle, X
+  ArrowRight, CheckCircle2, Clock, AlertTriangle, Eye, EyeOff
 } from 'lucide-react';
 
 const ROLES = [
@@ -53,15 +53,16 @@ const ROLES = [
 ];
 
 export default function UserRegistrationView({ onRegistered, onNavigateToLogin }) {
-  const [step, setStep] = useState(1); // 1=role selection, 2=details form, 3=success
+  const [step, setStep] = useState(1);
   const [selectedRole, setSelectedRole] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [result, setResult] = useState(null);
   const [form, setForm] = useState({
     name: '',
     email: '',
-    wallet_address: '',
+    password: '',
     facility_name: '',
     license_number: '',
     contact_phone: '',
@@ -70,6 +71,10 @@ export default function UserRegistrationView({ onRegistered, onNavigateToLogin }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (form.password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -183,6 +188,8 @@ export default function UserRegistrationView({ onRegistered, onNavigateToLogin }
             </div>
 
             <div className="bg-paper-light border-2 border-paper-border rounded-xl p-6 shadow-ledger space-y-4">
+
+              {/* Name + Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono uppercase tracking-wider text-ink-muted mb-1.5 font-semibold">Full Name *</label>
@@ -198,18 +205,35 @@ export default function UserRegistrationView({ onRegistered, onNavigateToLogin }
                 </div>
               </div>
 
+              {/* Password */}
               <div>
-                <label className="block text-xs font-mono uppercase tracking-wider text-ink-muted mb-1.5 font-semibold">Wallet Address (Ethereum) *</label>
-                <input required value={form.wallet_address} onChange={e => setForm({...form, wallet_address: e.target.value})}
-                  className="w-full px-3.5 py-2.5 bg-paper border border-paper-border rounded-lg text-sm font-mono focus:outline-none focus:border-ink-forest"
-                  placeholder="0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" />
-                <p className="text-[11px] text-ink-muted mt-1 font-sans">Your on-chain identity. The admin will assign your role to this address on the blockchain.</p>
+                <label className="block text-xs font-mono uppercase tracking-wider text-ink-muted mb-1.5 font-semibold">Password *</label>
+                <div className="relative">
+                  <input
+                    required
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={e => setForm({...form, password: e.target.value})}
+                    className="w-full px-3.5 py-2.5 bg-paper border border-paper-border rounded-lg text-sm focus:outline-none focus:border-ink-forest font-sans pr-10"
+                    placeholder="Min. 6 characters"
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted hover:text-ink-forest"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-ink-muted mt-1 font-sans">Used to sign in to your MedChain account.</p>
               </div>
 
+              {/* Facility + License/Phone */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono uppercase tracking-wider text-ink-muted mb-1.5 font-semibold">
-                    {selectedRole === 'customer' ? 'Patient ID / Hospital Name' : 'Facility / Company Name'}
+                    {selectedRole === 'customer' ? 'Hospital / Clinic Name' : 'Facility / Company Name'}
                   </label>
                   <input value={form.facility_name} onChange={e => setForm({...form, facility_name: e.target.value})}
                     className="w-full px-3.5 py-2.5 bg-paper border border-paper-border rounded-lg text-sm focus:outline-none focus:border-ink-forest font-sans"
@@ -219,7 +243,7 @@ export default function UserRegistrationView({ onRegistered, onNavigateToLogin }
                   <label className="block text-xs font-mono uppercase tracking-wider text-ink-muted mb-1.5 font-semibold">
                     {selectedRole === 'customer' ? 'Contact Phone' : 'Drug License / Registration No.'}
                   </label>
-                  <input value={form.license_number || form.contact_phone}
+                  <input value={selectedRole === 'customer' ? form.contact_phone : form.license_number}
                     onChange={e => selectedRole === 'customer'
                       ? setForm({...form, contact_phone: e.target.value})
                       : setForm({...form, license_number: e.target.value})}
@@ -228,11 +252,17 @@ export default function UserRegistrationView({ onRegistered, onNavigateToLogin }
                 </div>
               </div>
 
+              {/* Reason */}
               <div>
                 <label className="block text-xs font-mono uppercase tracking-wider text-ink-muted mb-1.5 font-semibold">Reason for Access Request</label>
                 <textarea rows={2} value={form.reason_for_access} onChange={e => setForm({...form, reason_for_access: e.target.value})}
                   className="w-full px-3.5 py-2.5 bg-paper border border-paper-border rounded-lg text-sm focus:outline-none focus:border-ink-forest font-sans"
                   placeholder="Brief description of your role and why you need access to MedChain..." />
+              </div>
+
+              {/* Blockchain notice */}
+              <div className="p-3 rounded-lg bg-ink-forest/5 border border-ink-forest/20 text-xs text-ink-forest font-sans">
+                🔗 <strong>No crypto wallet required.</strong> MedChain automatically generates a secure blockchain identity for your account. You only need your email and password to sign in.
               </div>
 
               {error && (
@@ -259,13 +289,17 @@ export default function UserRegistrationView({ onRegistered, onNavigateToLogin }
             <div>
               <h2 className="font-serif text-3xl font-bold text-ink-forest">Request Submitted!</h2>
               <p className="text-ink-muted text-sm font-sans mt-2 max-w-md mx-auto">
-                Your access request has been sent to the MedChain administrator. You'll be notified once your role has been approved.
+                Your access request has been sent to the MedChain administrator. You can sign in once your role has been approved.
               </p>
             </div>
             <div className="bg-paper-light border-2 border-paper-border rounded-xl p-5 max-w-sm mx-auto text-left space-y-2">
               <div className="flex items-center justify-between text-xs font-mono">
                 <span className="text-ink-muted uppercase">Name</span>
                 <span className="font-semibold text-ink-forest">{form.name}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-ink-muted uppercase">Email</span>
+                <span className="font-semibold text-ink-forest">{form.email}</span>
               </div>
               <div className="flex items-center justify-between text-xs font-mono">
                 <span className="text-ink-muted uppercase">Requested Role</span>
@@ -283,7 +317,7 @@ export default function UserRegistrationView({ onRegistered, onNavigateToLogin }
                   onClick={onNavigateToLogin}
                   className="px-6 py-2.5 bg-ink-forest hover:bg-ink-forestDark text-white font-serif font-bold text-sm rounded-lg shadow transition-all"
                 >
-                  Proceed to Sign In Gateway
+                  Proceed to Sign In
                 </button>
               )}
               {onRegistered && (

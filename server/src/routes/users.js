@@ -1,14 +1,24 @@
 const express = require("express");
 const router = express.Router();
 const UserService = require("../models/User");
+const { ethers } = require("ethers");
+const bcrypt = require("bcryptjs");
 
-// POST /api/users/register - New user submits their registration request
+// POST /api/users/register
+// Accepts: name, email, password, role + optional facility/license/phone/reason
+// Wallet address is AUTO-GENERATED — users never need MetaMask or any crypto knowledge.
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, wallet_address, role, facility_name, license_number, contact_phone, reason_for_access } = req.body;
+    const {
+      name, email, password, role,
+      facility_name, license_number, contact_phone, reason_for_access
+    } = req.body;
 
-    if (!name || !email || !wallet_address || !role) {
-      return res.status(400).json({ error: "name, email, wallet_address, and role are required." });
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ error: "name, email, password, and role are required." });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters." });
     }
 
     const validRoles = ['manufacturer', 'distributor', 'wholesaler', 'pharmacist', 'customer'];
@@ -16,20 +26,24 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ error: `Invalid role. Must be one of: ${validRoles.join(", ")}` });
     }
 
-    // Check if wallet already registered
-    const existing = await UserService.findByAddress(wallet_address);
-    if (existing) {
-      return res.status(409).json({
-        error: "This wallet address is already registered.",
-        status: existing.status,
-        role: existing.role,
-      });
+    // Check email uniqueness
+    const existingByEmail = await UserService.findByEmail(email);
+    if (existingByEmail) {
+      return res.status(409).json({ error: "An account with this email already exists." });
     }
+
+    // Auto-generate a fresh Ethereum wallet for this user (custodial — server-managed)
+    const generatedWallet = ethers.Wallet.createRandom();
+    const wallet_address = generatedWallet.address.toLowerCase();
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await UserService.create({
       name,
-      email,
-      wallet_address: wallet_address.toLowerCase(),
+      email: email.toLowerCase().trim(),
+      password: hashedPassword,
+      wallet_address,
       role: role.toLowerCase(),
       facility_name: facility_name || "",
       license_number: license_number || "",
@@ -48,16 +62,17 @@ router.post("/register", async (req, res) => {
       }
     });
   } catch (err) {
+    console.error("Registration error:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET /api/users/status/:address - Check registration status by wallet address
-router.get("/status/:address", async (req, res) => {
+// GET /api/users/status/:email - Check registration status by email
+router.get("/status/:email", async (req, res) => {
   try {
-    const user = await UserService.findByAddress(req.params.address);
+    const user = await UserService.findByEmail(req.params.email);
     if (!user) {
-      return res.status(404).json({ error: "No registration found for this address." });
+      return res.status(404).json({ error: "No registration found for this email." });
     }
     res.json({
       id: user.id,
